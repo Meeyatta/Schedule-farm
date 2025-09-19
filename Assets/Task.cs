@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.Events;
 
 public enum ReminderType { None, OneM, FiveM, FifteenM, Hour };
 public enum State { Unassigned, Early, WithinReminder, Active, StillAcceptable, Late }
@@ -13,6 +14,21 @@ public class Task : MonoBehaviour
     [TextArea] public string Description;
     public State CurState;
 
+    bool bWithinReminder_fired = false; 
+    public UnityEvent<Task> eWithinReminder = new UnityEvent<Task>();
+
+    bool bActive_fired = false; 
+    public UnityEvent<Task> eActive = new UnityEvent<Task>();
+
+    bool bStillAcceptabler_fired = false; 
+    public UnityEvent<Task> eStillAcceptable = new UnityEvent<Task>();
+
+    bool bLate_fired = false; 
+    public UnityEvent<Task> eLate = new UnityEvent<Task>();
+
+    [Header("---")]
+    public bool IsOpened;
+
     public class Reminder
     {
         public int Days;
@@ -21,8 +37,6 @@ public class Task : MonoBehaviour
 
     [Header("- End time -")]
     public int eHours; public int eMinutes; public int eSeconds;
-    [Header("- Current time -")]
-    public int cHours; public int cMinutes; public int cSeconds;
 
     public bool IsAssigned = false;
     Coroutine c;
@@ -30,6 +44,16 @@ public class Task : MonoBehaviour
     void Start()
     {
         Assign("Test", new DateTime(2025, 9, 17, 19, 40, 0), "test test", ReminderType.OneM);
+    }
+
+    public void bCreation_start()
+    {
+        if (!IsOpened)
+        {
+            TaskMenu.Instance.Menu_enable(this);
+            //IsOpened = true;
+        }
+        
     }
 
     public void Assign(string name, DateTime time, string desc, ReminderType type) //Starting the task
@@ -89,18 +113,22 @@ public class Task : MonoBehaviour
             }
             else if (diff.TotalSeconds >=0 && diff.TotalSeconds <= window) //Within the reminder
             {
+                if (!bWithinReminder_fired) { eWithinReminder.Invoke(this); bWithinReminder_fired = true; }
                 CurState = State.WithinReminder;
             }
             else if (diff.TotalSeconds < 0 && diff.TotalSeconds >= -60) //Active - within a minute of the set time
             {
+                if (!bActive_fired) { eActive.Invoke(this); bActive_fired = true; }
                 CurState = State.Active;
             }
             else if (diff.TotalSeconds > 60 && diff.TotalSeconds <= -3 * 60) //In case user missed the reminder for a few minutes
             {
+                if (!bStillAcceptabler_fired) { eStillAcceptable.Invoke(this); bStillAcceptabler_fired = true; }
                 CurState = State.StillAcceptable;
             }
             else //UNACCEPTABLE *LOUD INCORRECT BUZZER* THE USER IS TOO LATE
             {
+                if (!bLate_fired) { eLate.Invoke(this); bLate_fired = true; }
                 CurState = State.Late;
             }
             #endregion
@@ -126,6 +154,5 @@ public class Task : MonoBehaviour
     void Update()
     {
         eHours = EndTime.Hour; eMinutes = EndTime.Minute; eSeconds = EndTime.Second;
-        cHours = DateTime.Now.Hour; cMinutes = DateTime.Now.Minute; cSeconds = DateTime.Now.Second;
     }
 }

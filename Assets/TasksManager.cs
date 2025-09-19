@@ -5,6 +5,7 @@ using System;
 
 public class TasksManager : MonoBehaviour
 {
+    public List<Task> Tasks;
     #region Singleton
     public static TasksManager Instance;
     void Singleton()
@@ -19,14 +20,11 @@ public class TasksManager : MonoBehaviour
     }
     #endregion
 
-    void Start()
-    {
-        
-    }
+    [Header("- Current time -")]
+    public int cHours; public int cMinutes; public int cSeconds;
 
-    // Update is called once per frame
     void Update()
     {
-        //Debug.Log(DateTime.Now);
+        cHours = DateTime.Now.Hour; cMinutes = DateTime.Now.Minute; cSeconds = DateTime.Now.Second;
     }
 }
