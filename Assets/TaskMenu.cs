@@ -18,7 +18,10 @@ public class TaskMenu : MonoBehaviour
     public TMPro.TMP_InputField oFieldDate_m;
     public TMPro.TMP_InputField oFieldDate_y;
 
-    public TMPro.TMP_Dropdown oDropDown;
+    public TMPro.TMP_InputField oFieldName;
+    public TMPro.TMP_InputField oFieldDescription;
+
+    public TMPro.TMP_Dropdown oDropDownReminder;
     /*
     On creation:
     1) Get the task reference v
@@ -50,15 +53,23 @@ public class TaskMenu : MonoBehaviour
     }
     #endregion
 
+    Task CurTask;
     public void Menu_enable(Task task)
     {
         //Debug.Log(task.transform.position - transform.position);
+        CurTask = task;
         transform.position = task.transform.position + Offset;
         oElements.SetActive(true);
+    }
+    public void Menu_disable(Task task)
+    {
+        oElements.SetActive(false);
     }
 
     public void bMenu_submit()
     {
+        if (CurTask == null) return;
+
         int year; int month; int day;
         int hour; int minute; int second;
 
@@ -70,7 +81,7 @@ public class TaskMenu : MonoBehaviour
         if (!int.TryParse(oFieldTime_m.text, out minute)) { Debug.LogError("Improper minute"); }
         if (!int.TryParse(oFieldTime_s.text, out second)) { Debug.LogError("Improper second"); }
 
-        DateTime result;
+        DateTime result = DateTime.Now;
         try
         {
             result = new DateTime(year, month, day, hour, minute, second);
@@ -78,22 +89,69 @@ public class TaskMenu : MonoBehaviour
         }
         catch (ArgumentOutOfRangeException)
         {
-            Debug.LogError  ("Incorrect date/time format");
+            Debug.LogError("Incorrect date/time format");
         }
-        
+
+        ReminderType reminder = ReminderType.None;
+        switch (oDropDownReminder.value)
+        {
+            default:
+                break;
+            case 1:
+                reminder = ReminderType.OneM;
+                break;
+            case 2:
+                reminder = ReminderType.FiveM;
+                break;
+            case 3:
+                reminder = ReminderType.FifteenM;
+                break;
+            case 4:
+                reminder = ReminderType.Hour;
+                break;
+        }
+
+        Debug.LogFormat("Submitted: {0}, {1}, {2}, {3}", result, oFieldName.text, oFieldDescription.text, reminder);
+        CurTask.Assign(result ,oFieldName.text, oFieldDescription.text, reminder);
+        Menu_disable(CurTask);
+
     }
 
     void Start()
     {
         Array enumValues = Enum.GetValues(typeof(ReminderType));
+        List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
         foreach (ReminderType reminder in enumValues)
         {
             TMP_Dropdown.OptionData option = new TMP_Dropdown.OptionData();
-            option.text = reminder.ToString();
-            oDropDown.options.Add(option);
-        }
+            string text = "";
 
-        
+            switch (reminder)
+            {
+                default:
+                    text = "None";
+                    break;
+                case ReminderType.OneM:
+                    text = "One Minute";
+                    break;
+                case ReminderType.FiveM:
+                    text = "Five Minutes";
+                    break;
+                case ReminderType.FifteenM:
+                    text = "Fifteen Minutes";
+                    break;
+                case ReminderType.Hour:
+                    text = "One Hour";
+                    break;
+            }
+
+            option.text = text;
+            options.Add(option);
+
+        }
+        oDropDownReminder.AddOptions(options);
+
+
     }
 
 }
