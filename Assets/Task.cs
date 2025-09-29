@@ -14,6 +14,9 @@ public class Task : MonoBehaviour
     [TextArea] public string Description;
     public State CurState;
 
+    public bool IsAssigned = false;
+    public UnityEvent<Task> eAssigned = new UnityEvent<Task>();
+
     bool bWithinReminder_fired = false; 
     public UnityEvent<Task> eWithinReminder = new UnityEvent<Task>();
 
@@ -40,17 +43,18 @@ public class Task : MonoBehaviour
     [Header("- End time -")]
     public int eHours; public int eMinutes; public int eSeconds;
 
-    public bool IsAssigned = false;
 
     [Header("_______")]
-    public GameObject oButton;
     public GameObject oActive;
+    Task_Active Task_Active_;
+
+    public GameObject oButton;
 
     Coroutine c;
 
     void Start()
     {
-        //Assign("Test", new DateTime(2025, 9, 17, 19, 40, 0), "test test", ReminderType.OneM);
+        Task_Active_ = oActive.GetComponent<Task_Active>();
     }
 
     public void bCreation_start()
@@ -75,10 +79,10 @@ public class Task : MonoBehaviour
         IsAssigned = true;
 
         oButton.SetActive(false);
-        oActive.SetActive(true);
 
+        eAssigned.Invoke(this);
         if (c != null) { StopCoroutine(c); }
-        else { c = StartCoroutine(AwaitCompletion()); }          
+        c = StartCoroutine(AwaitCompletion());          
     }
 
     IEnumerator AwaitCompletion() //Continuous checks for current task
@@ -145,13 +149,8 @@ public class Task : MonoBehaviour
             #endregion
         }
 
+        yield return new WaitForSeconds(Time.deltaTime);
         oButton.SetActive(true);
-        oActive.SetActive(false);
-    }
-
-    public void Trigger() //Things what happen when the time is ripe
-    {
-       
     }
 
     public void Clear() //Resetting the task
@@ -163,7 +162,6 @@ public class Task : MonoBehaviour
         IsAssigned = false;
 
         oButton.SetActive(true);
-        oActive.SetActive(false);
     }
 
     void Update()
