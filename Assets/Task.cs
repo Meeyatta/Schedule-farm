@@ -135,7 +135,7 @@ public class Task : MonoBehaviour
                 if (!bActive_fired) { eActive.Invoke(this); bActive_fired = true; }
                 CurState = State.Active;
             }
-            else if (diff.TotalSeconds >= -3 * Minute && diff.TotalSeconds < -Minute) //In case user missed the reminder for a few minutes
+            else if (diff.TotalSeconds >= -2 * Minute && diff.TotalSeconds < -Minute) //In case user missed the reminder for a few minutes
             {
                 if (!bStillAcceptabler_fired) { eStillAcceptable.Invoke(this); bStillAcceptabler_fired = true; }
                 CurState = State.StillAcceptable;
@@ -159,9 +159,15 @@ public class Task : MonoBehaviour
         Description = null;
         CurState = State.Unassigned;
 
+        bWithinReminder_fired = false;
+        bActive_fired = false;
+        bStillAcceptabler_fired = false;
+        bLate_fired = false;
+
         IsAssigned = false;
 
         oButton.SetActive(true);
+        Task_Active_.Clear();
     }
 
     void Update()
