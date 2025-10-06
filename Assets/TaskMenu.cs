@@ -60,6 +60,25 @@ public class TaskMenu : MonoBehaviour
         CurTask = task;
         transform.position = task.transform.position + Offset;
         oElements.SetActive(true);
+
+        #region Autofilling certain fields
+        DateTime curDT = DateTime.Now;
+
+        string curYear = curDT.Year.ToString();
+        string curMonth = curDT.Month.ToString();
+        string curDay = curDT.Day.ToString();
+
+        string curHour = curDT.Hour.ToString();
+        string curMinutes = "";
+        string curSecond = "";
+
+        oFieldDate_y.text = curYear;
+        oFieldDate_m.text = curMonth;
+        oFieldDate_d.text = curDay;
+        oFieldTime_h.text = curHour;
+        oFieldTime_m.text = curMinutes;
+        oFieldTime_s.text = curSecond;
+        #endregion
     }
     public void Menu_disable(Task task)
     {
@@ -73,13 +92,15 @@ public class TaskMenu : MonoBehaviour
         int year; int month; int day;
         int hour; int minute; int second;
 
-        if (!int.TryParse(oFieldDate_y.text, out year)) { Debug.LogError("Improper year"); }
-        if (!int.TryParse(oFieldDate_m.text, out month)) { Debug.LogError("Improper month"); }
+        #region Cancel submition due to incorrect format
+        if (!int.TryParse(oFieldDate_y.text, out year)) { Debug.LogError("Improper year");  }
+        if (!int.TryParse(oFieldDate_m.text, out month)) { Debug.LogError("Improper month");  }
         if (!int.TryParse(oFieldDate_d.text, out day)) { Debug.LogError("Improper day"); }
 
         if (!int.TryParse(oFieldTime_h.text, out hour)) { Debug.LogError("Improper hour"); }
         if (!int.TryParse(oFieldTime_m.text, out minute)) { Debug.LogError("Improper minute"); }
         if (!int.TryParse(oFieldTime_s.text, out second)) { Debug.LogError("Improper second"); }
+        #endregion
 
         DateTime result = DateTime.Now;
         try
@@ -91,6 +112,14 @@ public class TaskMenu : MonoBehaviour
         {
             Debug.LogError("Incorrect date/time format");
         }
+
+        #region Cancel submission due to incorrent data
+        if (result < DateTime.Now) 
+        {
+            Debug.LogError("Datetime set is earlier than current");
+            return;
+        }
+        #endregion
 
         ReminderType reminder = ReminderType.None;
         switch (oDropDownReminder.value)

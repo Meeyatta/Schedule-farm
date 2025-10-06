@@ -19,6 +19,9 @@ public class MouseManager : MonoBehaviour
     }
     #endregion
 
+    public Vector3 CursorPosition = Vector3.zero;
+    public Dictionary<Collider2D, float> CurPointedAtObjs = new Dictionary<Collider2D, float>();
+
     public float ClickRadius;
 
     Camera Cam;
@@ -28,13 +31,32 @@ public class MouseManager : MonoBehaviour
         Vector3 mousePos = Input.mousePosition;
         mousePos.z = Camera.main.nearClipPlane;
 
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(mousePos);
-        worldPosition.z = 0;
+        CursorPosition = Camera.main.ScreenToWorldPoint(mousePos);
+        CursorPosition.z = 0;
 
         List<Collider2D> colliders = new List<Collider2D>();
-        colliders.AddRange(Physics2D.OverlapCircleAll(worldPosition, ClickRadius).ToList<Collider2D>());
+        colliders.AddRange(Physics2D.OverlapCircleAll(CursorPosition, ClickRadius).ToList<Collider2D>());
 
-        if (colliders == null || colliders.Count <= 0) return false; //No colliders to click on
+        #region Checking how long we are pointing at objects
+        foreach (var c in colliders) 
+        {
+            if (CurPointedAtObjs.ContainsKey(c))
+            {
+                CurPointedAtObjs[c] += Time.deltaTime;
+            }
+            else
+            {
+                CurPointedAtObjs.Add(c, 0);
+            }
+        }
+
+        #endregion
+
+        if (colliders == null || colliders.Count <= 0) 
+        {
+            CurPointedAtObjs.Clear();
+            return false; //No colliders to click on
+        } 
 
         return true;
     }
@@ -47,6 +69,9 @@ public class MouseManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        //foreach (var v in CurPointedAtObjs)
+        //{
+        //    Debug.Log(v);
+        //}
     }
 }
