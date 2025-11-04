@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class MouseManager : MonoBehaviour
 {
@@ -19,6 +20,7 @@ public class MouseManager : MonoBehaviour
     }
     #endregion
 
+    public UnityEvent eClickedOutsideElements;
     public Vector3 CursorPosition = Vector3.zero;
     public Dictionary<Collider2D, float> CurPointedAtObjs = new Dictionary<Collider2D, float>();
 
@@ -69,9 +71,10 @@ public class MouseManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //foreach (var v in CurPointedAtObjs)
-        //{
-        //    Debug.Log(v);
-        //}
+        if (Input.GetMouseButtonDown(0) && !CanClick())
+        {
+            eClickedOutsideElements.Invoke();
+            Debug.Log("Clicked outside the elements");
+        }
     }
 }

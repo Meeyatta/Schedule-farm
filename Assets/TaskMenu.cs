@@ -2,7 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TaskMenu : MonoBehaviour
 {
@@ -21,7 +23,9 @@ public class TaskMenu : MonoBehaviour
     public TMPro.TMP_InputField oFieldName;
     public TMPro.TMP_InputField oFieldDescription;
 
-    public TMPro.TMP_Dropdown oDropDownReminder;
+    public Toggle tNone; public Toggle tMin; public Toggle t5Min; public Toggle t15Min; public Toggle tHour;
+
+    public BoxCollider2D Coll;
     /*
     On creation:
     1) Get the task reference v
@@ -80,7 +84,7 @@ public class TaskMenu : MonoBehaviour
         oFieldTime_s.text = curSecond;
         #endregion
     }
-    public void Menu_disable(Task task)
+    public void Menu_disable()
     {
         oElements.SetActive(false);
     }
@@ -122,65 +126,43 @@ public class TaskMenu : MonoBehaviour
         #endregion
 
         ReminderType reminder = ReminderType.None;
-        switch (oDropDownReminder.value)
-        {
-            default:
-                break;
-            case 1:
-                reminder = ReminderType.OneM;
-                break;
-            case 2:
-                reminder = ReminderType.FiveM;
-                break;
-            case 3:
-                reminder = ReminderType.FifteenM;
-                break;
-            case 4:
-                reminder = ReminderType.Hour;
-                break;
-        }
+
+        if (tNone.isOn) reminder = ReminderType.None;
+        if (tMin.isOn) reminder = ReminderType.OneM;
+        if (t5Min.isOn) reminder = ReminderType.FiveM;
+        if (t15Min.isOn) reminder = ReminderType.FifteenM;
+        if (tHour.isOn) reminder = ReminderType.Hour;
+
 
         Debug.LogFormat("Submitted: {0}, {1}, {2}, {3}", result, oFieldName.text, oFieldDescription.text, reminder);
         CurTask.Assign(result ,oFieldName.text, oFieldDescription.text, reminder);
-        Menu_disable(CurTask);
+        Menu_disable();
 
     }
 
     void Start()
     {
-        Array enumValues = Enum.GetValues(typeof(ReminderType));
-        List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
-        foreach (ReminderType reminder in enumValues)
+
+
+    }
+    
+    void OnEnable()
+    {
+        MouseManager.Instance.eClickedOutsideElements.AddListener(Menu_disable);
+    }
+    void OnDisable() { }
+
+    void CheckIfShouldCloseMenu()
+    {
+        if (Input.GetMouseButtonDown(0) && !Coll.OverlapPoint(MouseManager.Instance.CursorPosition))
         {
-            TMP_Dropdown.OptionData option = new TMP_Dropdown.OptionData();
-            string text = "";
-
-            switch (reminder)
-            {
-                default:
-                    text = "None";
-                    break;
-                case ReminderType.OneM:
-                    text = "One Minute";
-                    break;
-                case ReminderType.FiveM:
-                    text = "Five Minutes";
-                    break;
-                case ReminderType.FifteenM:
-                    text = "Fifteen Minutes";
-                    break;
-                case ReminderType.Hour:
-                    text = "One Hour";
-                    break;
-            }
-
-            option.text = text;
-            options.Add(option);
-
+            Menu_disable();
         }
-        oDropDownReminder.AddOptions(options);
+    }
 
-
+    void Update()
+    {
+        CheckIfShouldCloseMenu();
     }
 
 }

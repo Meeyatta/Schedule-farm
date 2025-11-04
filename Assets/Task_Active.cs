@@ -8,6 +8,7 @@ using UnityEditor;
 
 public class Task_Active : MonoBehaviour
 {
+    public int Money;
     public Color StartColor;
 
     public Color Reminder_color;
@@ -74,6 +75,7 @@ public class Task_Active : MonoBehaviour
         {
             Clear();
 
+            ResourceManager.Instance.Add(Money);
             oElements.SetActive(false);
             Task_.Clear();
         }

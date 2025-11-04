@@ -38,21 +38,27 @@ public class HoverMenu : MonoBehaviour
 
     void Enable(List<Collider2D> colliders)
     {
-        Debug.Log("Got enabled around " + colliders.Count);
+        //Debug.Log("Got enabled around " + colliders.Count);
 
         Task task = null;
         Collider2D collider = null;
         foreach (var coll in colliders)
         {
-            Debug.Log(coll + " " + task);
+            Debug.Log(coll + " " + coll.tag);
             if (AllTasks.TryGetValue(coll, out task))
             {
                 collider = coll;
                 break;
             }
+
+            if (coll.tag == "TaskMenu")
+            {
+                collider = null;
+                break;
+            }
         }
 
-        if (task == null || collider == null) { Debug.Log(task + " " + collider); return; }
+        if (task == null || collider == null) { return; }
         if (!task.IsAssigned) return;
 
         oElements.transform.position = MouseManager.Instance.CursorPosition + Offset;
